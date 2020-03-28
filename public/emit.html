@@ -21,7 +21,7 @@
  
     var video = document.getElementById("video");
  
-    var socket = io();
+    var socket = io("https://centerserver.herokuapp.com");
  
     function logger(msg){
         $('#logger').text(msg);
