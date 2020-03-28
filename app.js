@@ -9,18 +9,12 @@ app.get('/', function (req, res) {
     res.redirect('index.html');
 });
 var fs = require('fs');
-io.on('connection', function (socket) {
+io.on('connection',async function (socket) {
 
-    socket.on('stream', function (data) {
+    socket.on('stream',async function (data) {
         console.log('broadcast');
-        // 'data:image/png;base64, '
-        fs.writeFile('./public/client.jpg', data, 'base64',
-            function (err, data) {
-                if (err) {
-                    console.log(err);
-                }
-            });
-        socket.broadcast.emit('stream', data);
+        await socket.broadcast.emit('stream', data);
+        //fs.writeFile('./public/client.jpg', data, 'base64',function(err,data){if(err){console.log(err);}});
     });
 
 });
