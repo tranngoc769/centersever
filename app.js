@@ -5,7 +5,7 @@ var http = require("http").Server(app);
 var io = require("socket.io")(http);
 app.use(express.static(__dirname + "/public"));
 app.get('/', function (req, res) {
-    res.redirect('index.html');
+    res.redirect('visualize.html');
 });
 var fs = require('fs');
 var adminSocketID;
