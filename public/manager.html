@@ -189,17 +189,18 @@
             }
             $(`div[id='${id}']`).remove();
             $(`a[name='${id}']`).remove();
+            tata.info('Waiting', 'Wait a moment', {
+                position: 'mr',
+                animate: 'slide',
+                duration: 3000
+            })
             tata.success('Deleted', 'Reload page if you want', {
                 position: 'mr',
                 animate: 'slide',
                 duration: 1000
             })
 
-             }, 3000);
-        });
-        socket.on('rejectok', function (id) {
-            console.log('ok');
-            
+             }, 1000);
         });
         socket.on('oneConnect', function (id) {
             if (IDlist.indexOf(id) < 0) {
@@ -262,7 +263,7 @@
             tata.info('Connection', `Client : ${id} Connection`, {
                 position: 'tm',
                 animate: 'slide',
-                duration: 10000
+                duration: 15000
             })
         });
         socket.on('stream', function (id_img) {
