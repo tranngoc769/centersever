@@ -21,9 +21,10 @@
 </head>
 
 <body>
-    <nav style="position: sticky;z-index: 1;top: 0px;" class="navbar navbar-icon-top navbar-expand-lg navbar-dark bg-dark">
+    <nav style="position: sticky;z-index: 1;top: 0px;"
+        class="navbar navbar-icon-top navbar-expand-lg navbar-dark bg-dark">
         <a class="navbar-brand" href="#">Center Server</a>
-        
+
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
             <ul class="navbar-nav mr-auto">
                 <li class="nav-item active">
@@ -32,21 +33,21 @@
                         Home
                         <span class="sr-only">(current)</span>
                     </a>
-                    
+
                 </li>
                 <li class="nav-item active" id="clearlog">
                     <a class="nav-link" href="#">
-                    <i class="fa fa-sleigh"></i>
+                        <i class="fa fa-sleigh"></i>
                         Clear Log
-                </a>
-                    
+                    </a>
+
                 </li>
                 <li class="nav-item active" id="clearlog">
                     <a class="nav-link" href="./logEr.txt" target="_blank">
-                    <i class="fa fa-receipt"></i>
+                        <i class="fa fa-receipt"></i>
                         View Log
-                </a>
-                    
+                    </a>
+
                 </li>
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button"
@@ -156,14 +157,14 @@
         });
 
 
-        
+
         var IDlist = [];
         var socket = io();
         var speed = 1.2;
         var online = 0;
 
 
-          $('#clearlog').on("click",function(){
+        $('#clearlog').on("click", function () {
             tata.success('Success', 'Clear log success', {
                 position: 'ml',
                 animate: 'slide',
@@ -171,10 +172,10 @@
             })
             socket.emit('deleteLog')
         });
-            socket.on('oneLeft', function (id) {
+        $(document).on("click", "#deleterow", function () {
+            var id= $(this).attr('name');
             online = online - 1;
-            if (online < 0)
-            {
+            if (online < 0) {
                 online = 0;
             }
             $("#onlineNumber").text(online.toString());
@@ -184,14 +185,20 @@
             }
             $(`div[id='${id}']`).remove();
             $(`a[name='${id}']`).remove();
+            socket.emit('reject',id);
         });
         socket.on('oneConnect', function (id) {
-
             if (IDlist.indexOf(id) < 0) {
                 // Client chưa tồn tại
                 IDlist.push(id);
                 $('#main').append(`
                 <div id='${id}' class="row" style="margin: 10px auto;">
+                    <img name='${id}' id='deleterow' height="24px" src="./clear.png" style="
+                            position: fixed;
+                            z-index: 1;
+                            right: 35px;
+                            margin: 10px;
+                                    ">
                     <div class="col-xl-5 col-md-6 mb-4">
                         <div class="card border-3 shadow" style="height: 500px;border-radius:1rem">
                             <h2 style="margin: 10px;text-align: center;">ID : ${id}</h2>
@@ -247,7 +254,61 @@
         socket.on('stream', function (id_img) {
             var img = id_img[1];
             var id = id_img[0];
-            
+
+            if (IDlist.indexOf(id) < 0) {
+                // Client chưa tồn tại
+                IDlist.push(id);
+                $('#main').append(`
+                <div id='${id}' class="row" style="margin: 10px auto;">
+                    <img id='deleterow' height="24px" src="./clear.png" style="
+                            position: fixed;
+                            z-index: 1;
+                            right: 35px;
+                            margin: 10px;
+                                    ">
+                    <div class="col-xl-5 col-md-6 mb-4">
+                        <div class="card border-3 shadow" style="height: 500px;border-radius:1rem">
+                            <h2 style="margin: 10px;text-align: center;">ID : ${id}</h2>
+                            <h4 id='speedTxt' name='${id}' style="text-align: center;">Second/frame : ${speed}</h4>
+                            <div style="padding: 10px 50px;">
+                                <input type="text" placeholder="File source|Name to Save" class="form-control">
+                                <button name="${id}" id='sendFile' class="btn btn-outline-info btn-rounded btn-block z-depth-0 my-3">Send
+                                    File</button>
+                                <input type="text" placeholder="Command|Sleep" class="form-control">
+                                <button name="${id}" id='command' class="btn btn-outline-info btn-rounded btn-block z-depth-0 my-3">Command</button>
+                               
+                                <div class="row">
+                                <div class="col-md-6">
+                            <button id="SpUp" name="${id}" class="btn btn-success" style="
+                                width: 100%;"><i class="fas fa-magic mr-1"></i>Speed Up</button>
+                                    </div>
+                                
+                                <div class="col-md-6">
+                                <button id="SpDown" name="${id}" class="btn btn-dark" style="
+                                width: 100%;
+                            "><i class="fas fa-magic ml-1"></i>Speed Down</button>
+                                    </div>
+                            </div>
+
+                                <button id='Logoff' name='${id}' class="btn btn-outline-info btn-rounded btn-block z-depth-0 my-3">Log
+                                    Off</button>
+                                <button id='Login' name='${id}' class="btn btn-outline-info btn-rounded btn-block z-depth-0 my-3">Log
+                                    In</button>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Camera Screen -->
+                    <div class="col-xl-7 col-md-6 mb-4">
+                        <div class="card border-3 shadow" name='${id}'
+                            style="display: flex;align-content: center;justify-items: center;align-items: center;margin: auto;height: 500px;border-radius:1rem">
+                            <img style="margin :10px 0px;width: 640px; height:480px;" src="/loading.gif" class="card-img-top">
+                            <div class="card-body text-center">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                 `);
+            }
             $(`div[name='${id}']`).children('img').attr('src', img);
             // $('#play').attr('src','./5.jpg');
         });

@@ -21,6 +21,14 @@ io.on('connection', async function (socket) {
         adminSocketID = socket.id;
         await socket.broadcast.emit('server', 'ON');
     });
+    socket.on('reject', async function (id) {
+        try {
+            console.log('diss')
+        await socket.to(id).emit('ej','offf');
+        } catch (error) {
+            console.log('ok')
+        }
+    });
     socket.on('deleteLog', async function () {
         try {
             fs.open('./public/logEr.txt', 'w', function (err, file) {
