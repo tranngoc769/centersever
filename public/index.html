@@ -3,7 +3,7 @@
 
 <head>
         <title>CenterServer</title>
-    <link rel="shortcut icon" href="./favicon.ico" />
+    <link rel="icon" href="./favicon.ico" />
     <link rel="stylesheet" type="text/css" href="/css/bootstrap.min.css">
     <link rel="stylesheet" type="text/css" href="/css/fontawe.css">
     <script src="/js/jquery.min.js"></script>
@@ -189,8 +189,6 @@
                 IDlist.splice(index, 1);
             }
             setTimeout(function(){ 
-                
-             }, 3000);
             $(`div[id='${id}']`).remove();
             $(`a[name='${id}']`).remove();
             tata.success('Deleted', 'Reload page if you want', {
@@ -198,6 +196,8 @@
                 animate: 'slide',
                 duration: 1000
             })
+
+             }, 3000);
         });
         socket.on('rejectok', function (id) {
             console.log('ok');
