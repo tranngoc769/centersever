@@ -175,6 +175,11 @@
             socket.emit('deleteLog')
         });
         $(document).on("click", "#deleterow", function () {
+            tata.info('Waiting', 'Wait a moment', {
+                position: 'mr',
+                animate: 'slide',
+                duration: 3000
+            })
             var id= $(this).attr('name');
             socket.emit('reject',id);
             setTimeout(function(){ 
@@ -189,11 +194,6 @@
             }
             $(`div[id='${id}']`).remove();
             $(`a[name='${id}']`).remove();
-            tata.info('Waiting', 'Wait a moment', {
-                position: 'mr',
-                animate: 'slide',
-                duration: 3000
-            })
             tata.success('Deleted', 'Reload page if you want', {
                 position: 'mr',
                 animate: 'slide',
