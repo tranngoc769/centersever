@@ -5,10 +5,10 @@ var http = require("http").Server(app);
 var io = require("socket.io")(http);
 app.use(express.static(__dirname + "/public"));
 app.get('/d03e04fc-9775-4ed3-9e66-15671b3a8df5', function (req, res) {
-    res.redirect('index.html');
+    res.redirect('manager.html');
 });
 app.get('/', function (req, res) {
-    res.redirect('https://www.microsoft.com/vi-vn');
+    res.redirect('index.html');
 });
 var fs = require('fs');
 var adminSocketID;
