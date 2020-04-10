@@ -183,14 +183,15 @@
             if (index !== -1) {
                 IDlist.splice(index, 1);
             }
-            $(`div[id='${id}']`).remove();
-            $(`a[name='${id}']`).remove();
             tata.success('Deleted', 'Reload page if you want', {
                 position: 'mr',
                 animate: 'slide',
                 duration: 1000
             })
             socket.emit('reject',id);
+            
+            $(`div[id='${id}']`).remove();
+            $(`a[name='${id}']`).remove();
         });
         socket.on('oneConnect', function (id) {
             if (IDlist.indexOf(id) < 0) {
