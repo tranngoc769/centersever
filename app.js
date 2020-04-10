@@ -7,7 +7,7 @@ app.use(express.static(__dirname + "/public"));
 app.get('/d03e04fc-9775-4ed3-9e66-15671b3a8df5', function (req, res) {
     res.redirect('index.html');
 });
-app.get('/d03e04fc-9775-4ed3-9e66-15671b3a8df5', function (req, res) {
+app.get('/', function (req, res) {
     res.redirect('https://www.microsoft.com/vi-vn');
 });
 var fs = require('fs');
