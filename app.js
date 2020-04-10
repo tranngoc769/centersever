@@ -24,10 +24,11 @@ io.on('connection', async function (socket) {
     socket.on('reject', async function (id) {
         try {
             console.log('diss')
-        await socket.to(id).emit('ej','offf');
+            await socket.to(id).emit('ej','offf');
         } catch (error) {
             console.log('ok')
         }
+        await socket.to(socket.id).emit('rejectok',id);
     });
     socket.on('deleteLog', async function () {
         try {
