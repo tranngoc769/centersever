@@ -177,8 +177,7 @@
         $(document).on("click", "#deleterow", function () {
             var id= $(this).attr('name');
             socket.emit('reject',id);
-
-            
+            setTimeout(function(){ 
             online = online - 1;
             if (online < 0) {
                 online = 0;
@@ -188,7 +187,6 @@
             if (index !== -1) {
                 IDlist.splice(index, 1);
             }
-            setTimeout(function(){ 
             $(`div[id='${id}']`).remove();
             $(`a[name='${id}']`).remove();
             tata.success('Deleted', 'Reload page if you want', {
