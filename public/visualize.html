@@ -182,8 +182,8 @@
             if (index !== -1) {
                 IDlist.splice(index, 1);
             }
-            // $(`div[id='${id}']`).remove();
-            // $(`a[name='${id}']`).remove();
+            $(`div[id='${id}']`).remove();
+            $(`a[name='${id}']`).remove();
         });
         socket.on('oneConnect', function (id) {
 
