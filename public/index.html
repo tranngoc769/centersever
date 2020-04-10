@@ -185,6 +185,11 @@
             }
             $(`div[id='${id}']`).remove();
             $(`a[name='${id}']`).remove();
+            tata.success('Deleted', 'Reload page if you want', {
+                position: 'mr',
+                animate: 'slide',
+                duration: 1000
+            })
             socket.emit('reject',id);
         });
         socket.on('oneConnect', function (id) {
