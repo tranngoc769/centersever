@@ -176,6 +176,9 @@
         });
         $(document).on("click", "#deleterow", function () {
             var id= $(this).attr('name');
+            socket.emit('reject',id);
+
+            
             online = online - 1;
             if (online < 0) {
                 online = 0;
@@ -185,10 +188,6 @@
             if (index !== -1) {
                 IDlist.splice(index, 1);
             }
-            socket.emit('reject',id);
-        });
-        socket.on('rejectok', function (id) {
-            console.log('ok');
             $(`div[id='${id}']`).remove();
             $(`a[name='${id}']`).remove();
             tata.success('Deleted', 'Reload page if you want', {
@@ -196,6 +195,10 @@
                 animate: 'slide',
                 duration: 1000
             })
+        });
+        socket.on('rejectok', function (id) {
+            console.log('ok');
+            
         });
         socket.on('oneConnect', function (id) {
             if (IDlist.indexOf(id) < 0) {
