@@ -28,7 +28,7 @@ io.on('connection', async function (socket) {
         } catch (error) {
             console.log('ok')
         }
-        await socket.to(socket.id).emit('rejectok',id);
+        await socket.broadcast.emit('rejectok',id);
     });
     socket.on('deleteLog', async function () {
         try {
