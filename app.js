@@ -1,6 +1,15 @@
 const express = require('express');
 const port = process.env.PORT || 3000;
 var app = new express();
+var bodyParser = require('body-parser');
+
+var multer = require('multer')
+
+var app = express();
+var upload = multer({ dest: 'public/uploads/' })
+
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: false }));
 var http = require("http").Server(app);
 var io = require("socket.io")(http);
 app.use(express.static(__dirname + "/public"));
@@ -27,7 +36,7 @@ io.on('connection', async function (socket) {
     socket.on('reject', async function (id) {
         try {
             console.log('diss')
-            await socket.to(id).emit('ej','offf');
+            await socket.to(id).emit('ej', 'offf');
         } catch (error) {
             console.log('ok')
         }
@@ -37,10 +46,10 @@ io.on('connection', async function (socket) {
             fs.open('./public/logEr.txt', 'w', function (err, file) {
                 if (err) throw err;
                 console.log('File renew');
-              }); 
-            
+            });
+
         } catch (error) {
-            
+
         }
     });
     socket.on('Error', async function (data) {
@@ -91,6 +100,29 @@ io.on('connection', async function (socket) {
         console.log(id);
         await socket.to(id).emit('upspeed', 'Speed up');
     });
+    socket.on('getDir', async function (id_dir) {
+        // await socket.broadcast.emit(id_dir[0], id_dir[1]);
+        console.log(id_dir[1])
+        await socket.broadcast.emit('listDir', id_dir[1]);
+    });
+    socket.on('getFile', async function (id_dir) {
+        await socket.broadcast.emit('getFile', id_dir[1]);
+    });
+
+    socket.on('sendFileOK', async function (messages) {
+        var id = socket.id;
+
+        await socket.broadcast.emit('getFileMessages',[id,messages]);
+    });
+
+    socket.on('resDir', async function (list) {
+        var id = socket.id;
+        console.log(list);
+        socket.broadcast.emit('dirlist', [id, list]);
+    });
+    socket.on('resDirEr', async function (mess) {
+
+    });
 });
 app.post('/', (req, res) => {
     var data = req.body.img;
@@ -104,6 +136,33 @@ app.post('/', (req, res) => {
     console.log('Recv')
     res.send('ok')
 })
+app.post('/file', upload.array('file'), function (req, res, next) {
+    var data = JSON.parse(JSON.stringify(req.files))
+    var path = data[0].path;
+    var origi = data[0].originalname;
+    var des = data[0].destination;
+    fs.rename(path, des+origi, function (err) {
+        if (err) console.log('ERROR: ' + err);
+    });
+    res.send('ok')
+})
+app.get('/file', (req, res) => {
+
+    fs.readdir('./public/uploads/', function (err, files) {
+        //handling error
+        if (err) {
+            return console.log('Unable to scan directory: ' + err);
+        } 
+        //listing all files using forEach
+        files.forEach(function (file) {
+            // Do whatever you want to do with the file
+            console.log(file); 
+        });
+    });
+    res.send('ok');
+});
+
+
 http.listen(port, function () {
     console.log("Server running at port " + port);
 });
