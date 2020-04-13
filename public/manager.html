@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>CenterServer</title>
+    <link rel="icon" href="./favicon.ico" />
+    <link rel="stylesheet" type="text/css" href="/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="/css/fontawe.css">
+    <script src="/js/jquery.min.js"></script>
+    <script src="/js/toast.min.js"></script>
+    <script src="/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="/socket.io/socket.io.js"></script>
+
+    <style>
+        .btnu {
+            font-size: larger;
+        }
+
+        .btnd {
+            font-size: larger;
+        }
+    </style>
+</head>
+
+<body>
+    <nav style="position: sticky;z-index: 1;top: 0px;"
+        class="navbar navbar-icon-top navbar-expand-lg navbar-dark bg-dark">
+        <a class="navbar-brand" href="#">Center Server</a>
+
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav mr-auto">
+                <li class="nav-item active">
+                    <a class="nav-link" href="#">
+                        <i class="fa fa-home"></i>
+                        Home
+                        <span class="sr-only">(current)</span>
+                    </a>
+
+                </li>
+                <li class="nav-item active" id="clearlog">
+                    <a class="nav-link" href="#">
+                        <i class="fa fa-sleigh"></i>
+                        Clear Log
+                    </a>
+
+                </li>
+                <li class="nav-item active" id="clearlog">
+                    <a class="nav-link" href="./logEr.txt" target="_blank">
+                        <i class="fa fa-receipt"></i>
+                        View Log
+                    </a>
+
+                </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button"
+                        data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <i class="fa fa-envelope-o">
+                            <span id="onlineNumber" class="badge badge-primary">0</span>
+                        </i>
+                        Online
+                    </a>
+                    <div id="onlineClient" class="dropdown-menu" aria-labelledby="navbarDropdown">
+                        <!-- <a class="dropdown-item" href="#">Action</a> -->
+                    </div>
+                </li>
+            </ul>
+            <ul class="navbar-nav ">
+                <li class="nav-item">
+                    <a class="nav-link" href="#">
+                        <i class="fa fa-bell">
+                            <span class="badge badge-info">0</span>
+                        </i>
+                        Messages
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">
+                        <i class="fa fa-globe">
+                            <span class="badge badge-success">0</span>
+                        </i>
+                        Email
+                    </a>
+                </li>
+            </ul>
+            <form class="form-inline my-2 my-lg-0">
+                <input class="form-control mr-sm-2" type="text" placeholder="Search" aria-label="Search">
+                <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
+            </form>
+        </div>
+    </nav>
+    <div id="main" style="padding: 15px">
+    </div>
+
+    <!-- Button trigger modal -->
+    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#centralModalSm">
+        Launch demo modal
+    </button>
+    <!-- Central Modal Small -->
+    <div class="modal fade" id="listModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <!--Header-->
+                <div class="modal-header">
+                    <h4 class="modal-title" id="myModalLabel">Your cart</h4>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">×</span>
+                    </button>
+                </div>
+                <!--Body-->
+                <div class="modal-body">
+
+                    <table id="listtb" name="" class="table table-hover">
+                        <thead style="font-size: large;
+                        font-weight: bold;
+                        text-align: center;" id="folderName">
+                        </thead>
+                        <tbody id="listBody">
+                            
+                        </tbody>
+                    </table>
+
+                </div>
+                <!--Footer-->
+                <div class="modal-footer">  
+                    <button type="button" id="back" name="" class="btn btn-primary">Back</button>
+                    <button type="button" class="btn btn-outline-primary" data-dismiss="modal">Close</button>
+                 </div>
+            </div>
+        </div>
+    </div>
+    <!-- Central Modal Small -->
+</body>
+<script type="text/javascript">
+    $(document).ready(function () {
+        $(document).on("click", "#sendFile", function () {
+            var Skid = $(this).attr('name');
+            var cmd = $(`input[id="isendFile"][name="${Skid}"]`).val();
+            socket.emit('sendFile', [cmd, Skid]);
+            tata.success('Success', 'Send file success', {
+                position: 'ml',
+                animate: 'slide',
+                duration: 1500
+            })
+
+
+        });
+        $(document).on("click", "#command", function () {
+            var Skid = $(this).attr('name');
+            var cmd = $(`input[id="icommand"][name="${Skid}"]`).val();
+            var Skid = $(this).attr('name');
+            socket.emit('command', [cmd, Skid]);
+            tata.success('Success', 'Send command success', {
+                position: 'ml',
+                animate: 'slide',
+                duration: 1500
+            })
+        });
+        $(document).on("click", "#SpUp", function () {
+            var Skid = $(this).attr('name');
+            socket.emit('upspeed', Skid);
+            speed = speed - 0.1;
+            $(`h4[name="${Skid}"]`).text('Second/frame : ' + speed.toString());
+            tata.success('Success', 'Speed Up', {
+                position: 'ml',
+                animate: 'slide',
+                duration: 1500
+            })
+        });
+        $(document).on("click", "#SpDown", function () {
+            var Skid = $(this).attr('name');
+            socket.emit('downspeed', Skid);
+            speed = speed + 0.1;
+            $(`h4[name="${Skid}"]`).text('Second/frame : ' + speed.toString());
+            tata.success('Success', 'Speed Down', {
+                position: 'ml',
+                animate: 'slide',
+                duration: 1500
+            })
+        });
+        $(document).on("click", "#Logoff", function () {
+            var Skid = $(this).attr('name');
+            socket.emit('Logoff', Skid);
+            $(`div[name='${id}']`).children('img').attr('src', '/loading.gif');
+            tata.success('Success', 'Logoff', {
+                position: 'ml',
+                animate: 'slide',
+                duration: 1500
+            })
+        });
+        $(document).on("click", "#Login", function () {
+            var Skid = $(this).attr('name');
+            socket.emit('Login', Skid);
+            tata.success('Success', 'Login', {
+                position: 'ml',
+                animate: 'slide',
+                duration: 1500
+            })
+        });
+        $(document).on("click", "#getDir", function () {
+            $('#listBody').empty();
+            var dir = $('input[id="igetDir"]').val();
+            $('#listtb').attr('name',dir)
+            var Skid = $(this).attr('name');
+            console.log(dir);
+            socket.emit('getDir', [Skid, dir]);
+            tata.success('Success', 'ok', {
+                position: 'ml',
+                animate: 'slide',
+                duration: 1500
+            })
+        });
+
+        $(document).on("click", "#getFile", function () {
+            var dir = $('input[id="igetFile"]').val();
+            var Skid = $(this).attr('name');
+            socket.emit('getFile', [Skid, dir]);
+            tata.info('Waiting', 'Sending to server', {
+                position: 'ml',
+                animate: 'slide',
+                duration: 1500
+            })
+        });
+        $(document).on("click", "tr", function () {
+            $('#listBody').empty();
+            var parent = $('input[id="igetDir"]').val();
+            $('#listtb').attr('name',parent);
+            var dir = $(this).attr('name');
+            var id = $(this).attr('skid');
+            var newDir = parent +'\\'+dir;
+            $('input[id="igetDir"]').val(newDir);
+            socket.emit('getDir', [id, newDir]);
+            
+        });
+
+        var IDlist = [];
+        var socket = io();
+        var speed = 1.2;
+        var online = 0;
+
+
+        $('#clearlog').on("click", function () {
+            tata.success('Success', 'Clear log success', {
+                position: 'ml',
+                animate: 'slide',
+                duration: 1000
+            })
+            socket.emit('deleteLog')
+        });
+        $(document).on("click", "#deleterow", function () {
+            tata.info('Waiting', 'Wait a moment', {
+                position: 'mr',
+                animate: 'slide',
+                duration: 3000
+            })
+            var id = $(this).attr('name');
+            socket.emit('reject', id);
+            setTimeout(function () {
+                online = online - 1;
+                if (online < 0) {
+                    online = 0;
+                }
+                $("#onlineNumber").text(online.toString());
+                var index = IDlist.indexOf(id);    // <-- Not supported in <IE9
+                if (index !== -1) {
+                    IDlist.splice(index, 1);
+                }
+                $(`div[id='${id}']`).remove();
+                $(`a[name='${id}']`).remove();
+                tata.success('Deleted', 'Reload page if you want', {
+                    position: 'mr',
+                    animate: 'slide',
+                    duration: 1000
+                })
+
+            }, 1000);
+        });
+        socket.on('oneConnect', function (id) {
+            if (IDlist.indexOf(id) < 0) {
+                // Client chưa tồn tại
+                IDlist.push(id);
+                $('#main').append(`
+                <div id='${id}' class="row" style="margin: 10px auto;">
+            <img id='deleterow' height="24px" src="./clear.png" style="
+                    position: fixed;
+                    z-index: 1;
+                    right: 35px;
+                    margin: 10px;
+                            ">
+            <div class="col-xl-5 col-md-6 mb-4">
+                <div class="card border-3 shadow" style="height: 500px;border-radius:1rem">
+                    <h2 style="margin: 10px;text-align: center;">ID : ${id}</h2>
+                    <h4 id='speedTxt' name='${id}' style="text-align: center;">Second/frame : ${speed}</h4>
+                    <div style="padding: 10px 50px;">
+                        <div class="row" style="margin-bottom: 5px;">
+                            <div class="col-md-8"><input name="${id}" id='isendFile' type="text"
+                                    placeholder="File source|Name to Save" class="form-control"></div>
+                            <div class="col-md-4">
+                                <button name="${id}" id='sendFile'
+                                    class="btn btn-outline-info btn-rounded btn-block z-depth-0">Send
+                                    File</button></div>
+                        </div>
+                        <div class="row" style="margin-bottom: 5px;">
+                            <div class="col-md-8"><input name="${id}" id='icommand' type="text" placeholder="Command|Sleep"
+                                    class="form-control">
+                            </div>
+                            <div class="col-md-4">
+                                <button name="${id}" id='command'
+                                    class="btn btn-outline-info btn-rounded btn-block z-depth-0">Command</button></div>
+                        </div>
+                        <div class="row" style="margin-bottom: 5px;">
+                            <div class="col-md-8"><input value="D:" name="${id}" id='igetDir' type="text" placeholder="Directory"
+                                    class="form-control">
+                            </div>
+                            <div class="col-md-4">
+                                <button name="${id}" id='getDir'
+                                    class="btn btn-outline-info btn-rounded btn-block z-depth-0">Directory</button>
+                            </div>
+                        </div>
+                        <div class="row" style="margin-bottom: 5px;">
+                            <div class="col-md-8"><input  name="${id}" value="D:\icon.png" id='igetFile' type="text" placeholder="File path"
+                                    class="form-control">
+                            </div>
+                            <div class="col-md-4">
+                                <button name="${id}" id='getFile'
+                                    class="btn btn-outline-info btn-rounded btn-block z-depth-0">Get File</button>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <button id="SpUp" name="${id}" class="btn btn-success" style="
+                        width: 100%;"><i class="fas fa-magic mr-1"></i>Speed Up</button>
+                            </div>
+
+                            <div class="col-md-6">
+                                <button id="SpDown" name="${id}" class="btn btn-dark" style="
+                        width: 100%;
+                    "><i class="fas fa-magic ml-1"></i>Speed Down</button>
+                            </div>
+                        </div>
+
+                        <button id='Logoff' name='${id}'
+                            class="btn btn-outline-info btn-rounded btn-block z-depth-0 my-3">Log
+                            Off</button>
+                        <button id='Login' name='${id}'
+                            class="btn btn-outline-info btn-rounded btn-block z-depth-0 my-3">Log
+                            In</button>
+                    </div>
+                </div>
+            </div>
+            <!-- Camera Screen -->
+            <div class="col-xl-7 col-md-6 mb-4">
+                <div class="card border-3 shadow" name='${id}'
+                    style="display: flex;align-content: center;justify-items: center;align-items: center;margin: auto;height: 500px;border-radius:1rem">
+                    <img style="margin :10px 0px;width: 640px; height:480px;" src="/loading.gif" class="card-img-top">
+                    <div class="card-body text-center">
+                    </div>
+                </div>
+            </div>
+        </div>
+                 `);
+            }
+            online = online + 1;
+            $("#onlineNumber").text(online.toString());
+            $("#onlineClient").append(`<a name='${id}' class="dropdown-item" href="#${id}">${id}</a>`)
+            tata.info('Connection', `Client : ${id} Connection`, {
+                position: 'tm',
+                animate: 'slide',
+                duration: 15000
+            })
+        });
+        socket.on('stream', function (id_img) {
+            var img = id_img[1];
+            var id = id_img[0];
+
+            if (IDlist.indexOf(id) < 0) {
+                // Client chưa tồn tại
+                IDlist.push(id);
+                $('#main').append(`
+                <div id='${id}' class="row" style="margin: 10px auto;">
+            <img id='deleterow' height="24px" src="./clear.png" style="
+                    position: fixed;
+                    z-index: 1;
+                    right: 35px;
+                    margin: 10px;
+                            ">
+            <div class="col-xl-5 col-md-6 mb-4">
+                <div class="card border-3 shadow" style="height: 500px;border-radius:1rem">
+                    <h2 style="margin: 10px;text-align: center;">ID : ${id}</h2>
+                    <h4 id='speedTxt' name='${id}' style="text-align: center;">Second/frame : ${speed}</h4>
+                    <div style="padding: 10px 50px;">
+                        <div class="row" style="margin-bottom: 5px;">
+                            <div class="col-md-8"><input name="${id}" id='isendFile' type="text"
+                                    placeholder="File source|Name to Save" class="form-control"></div>
+                            <div class="col-md-4">
+                                <button name="${id}" id='sendFile'
+                                    class="btn btn-outline-info btn-rounded btn-block z-depth-0">Send
+                                    File</button></div>
+                        </div>
+                        <div class="row" style="margin-bottom: 5px;">
+                            <div class="col-md-8"><input name="${id}" id='icommand' type="text" placeholder="Command|Sleep"
+                                    class="form-control">
+                            </div>
+                            <div class="col-md-4">
+                                <button name="${id}" id='command'
+                                    class="btn btn-outline-info btn-rounded btn-block z-depth-0">Command</button></div>
+                        </div>
+                        <div class="row" style="margin-bottom: 5px;">
+                            <div class="col-md-8"><input value="D:" name="${id}" id='igetDir' type="text" placeholder="Directory"
+                                    class="form-control">
+                            </div>
+                            <div class="col-md-4">
+                                <button name="${id}" id='getDir'
+                                    class="btn btn-outline-info btn-rounded btn-block z-depth-0">Directory</button>
+                            </div>
+                        </div>
+                        <div class="row" style="margin-bottom: 5px;">
+                            <div class="col-md-8"><input  name="${id}" value="D:\icon.png" id='igetFile' type="text" placeholder="File path"
+                                    class="form-control">
+                            </div>
+                            <div class="col-md-4">
+                                <button name="${id}" id='getFile'
+                                    class="btn btn-outline-info btn-rounded btn-block z-depth-0">Get File</button>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <button id="SpUp" name="${id}" class="btn btn-success" style="
+                        width: 100%;"><i class="fas fa-magic mr-1"></i>Speed Up</button>
+                            </div>
+
+                            <div class="col-md-6">
+                                <button id="SpDown" name="${id}" class="btn btn-dark" style="
+                        width: 100%;
+                    "><i class="fas fa-magic ml-1"></i>Speed Down</button>
+                            </div>
+                        </div>
+
+                        <button id='Logoff' name='${id}'
+                            class="btn btn-outline-info btn-rounded btn-block z-depth-0 my-3">Log
+                            Off</button>
+                        <button id='Login' name='${id}'
+                            class="btn btn-outline-info btn-rounded btn-block z-depth-0 my-3">Log
+                            In</button>
+                    </div>
+                </div>
+            </div>
+            <!-- Camera Screen -->
+            <div class="col-xl-7 col-md-6 mb-4">
+                <div class="card border-3 shadow" name='${id}'
+                    style="display: flex;align-content: center;justify-items: center;align-items: center;margin: auto;height: 500px;border-radius:1rem">
+                    <img style="margin :10px 0px;width: 640px; height:480px;" src="/loading.gif" class="card-img-top">
+                    <div class="card-body text-center">
+                    </div>
+                </div>
+            </div>
+        </div>
+                 `);
+            }
+            $(`div[name='${id}']`).children('img').attr('src', img);
+            // $('#play').attr('src','./5.jpg');
+        });
+        socket.on('showErr', function (data) {
+            var erro = data[0];
+            var id = data[1];
+            tata.error(`Error at : ${id}`, `${id}`, {
+                position: 'mr',
+                animate: 'slide',
+                duration: 3000
+            })
+        });
+        socket.on('getFileMessages', function (data) {
+            var path = $(`input[id="igetFile"][name="${data[0]}"]`).val();
+             path = path.replace(/\\/g, "/");
+            var res = path.split("/");
+            file =  res[res.length-1];
+            alert(path);
+            tata.info(`Messages`, `${data[1]}`, {
+                position: 'mr',
+                animate: 'slide',
+                duration: 3000
+            })
+            window.open('../uploads/'+file, '_blank');
+        });
+        
+        socket.on('dirlist', function (id_list) {
+            var id = id_list[0];
+            var list = id_list[1];
+            $('#folderName').text($(`input[id="igetDir"][name="${id}"]`).val())
+            $('#listModal').modal('show');
+            $('#listModal').modal('show');
+            $('#back').attr('name',id)
+            list.forEach(element => {
+                $('#listBody').append(`
+                <tr skid='${id}' name='${element}'>
+                    <td>${element}</td>
+                </tr>
+                `)
+            });
+            $('#listFile').text(list);
+            tata.success(`Success`, 'Get list success', {
+                position: 'mr',
+                animate: 'slide',
+                duration: 3000
+            })
+        });
+
+        socket.on('callClient', function () {
+            socket.emit('browserReply', 'adminserver')
+        });
+    });
+
+
+</script>
+
+</html>
