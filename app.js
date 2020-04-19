@@ -78,14 +78,14 @@ io.on('connection', async function (socket) {
                     var logStream = fs.createWriteStream('./public/active', { flags: 'w' });
                     logStream.write('ON');
                     logStream.end('');
-                    socket.emit('activeStat',1);//1 la active, 0 la deactive
+                    socket.emit('activeStat',[1,1]);//1 la active, 0 la deactive
                 }
                 else
                 {
                     var logStream = fs.createWriteStream('./public/active', { flags: 'w' });
                     logStream.write('OFF');
                     logStream.end('');
-                    socket.emit('activeStat',0);//1 la active, 0 la deactive
+                    socket.emit('activeStat',[0,1]);//1 la active, 0 la deactive
                 }
             });
         } catch (error) {
@@ -101,11 +101,11 @@ io.on('connection', async function (socket) {
                 console.log(active+'|');
                 if (active == "ON")
                 {
-                    socket.emit('activeStat',1);//1 la active, 0 la deactive
+                    socket.emit('activeStat',[1,3000]);//1 la active, 0 la deactive
                 }
                 else
                 {
-                    socket.emit('activeStat',0);//1 la active, 0 la deactive
+                    socket.emit('activeStat',[0,3000]);//1 la active, 0 la deactive
                 }
             });
         } catch (error) {
@@ -271,12 +271,12 @@ app.get('/file', (req, res) => {
             // `<li class="list-group-item"><a href="../uploads/${file}">${file}</a></li>`;
             body = body + `
             <tr>
-            <td width="40%">${file}</td>
-            <td width="15%">${size}</td>
-            <td width="25%">${date}</td>
-            <td style="text-align: center;" width="20%">
-                <button type="button" class="btn btn-outline-success"><a href='../uploads/${file}' target="_blank">Download</a></button>
-                <button type="button" class="btn btn-outline-success"><a href='../delete?file=${file}'>Delete</a></button>
+            <td width="40%" style="vertical-align: middle;">${file}</td>
+            <td width="15%" style="vertical-align: middle;">${size}</td>
+            <td width="25%" style="vertical-align: middle;">${date}</td>
+            <td style="padding: 3px;text-align: center;" width="20%">
+                <button style="padding: 3px 15px;" type="button" class="btn btn-outline-success"><a href='../uploads/${file}' target="_blank">Download</a></button>
+                <button style="padding: 3px 15px;" type="button" class="btn btn-outline-success"><a href='../delete?file=${file}'>Delete</a></button>
             </td>
             </tr>
             `

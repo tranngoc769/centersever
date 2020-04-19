@@ -195,12 +195,12 @@
         $(document).on("click", "#Logoff", function () {
             var Skid = $(this).attr('name');
             socket.emit('Logoff', Skid);
-            $(`div[name='${id}']`).children('img').attr('src', '/loading.gif');
             tata.success('Success', 'Logoff', {
                 position: 'ml',
                 animate: 'slide',
                 duration: 1500
             })
+            $(`div[name='${id}']`).children('img').attr('src', '/loading.gif');
         });
         $(document).on("click", "#Login", function () {
             var Skid = $(this).attr('name');
@@ -301,6 +301,11 @@
         });
         $(document).on("click", "#deleterow", function () {
 
+            tata.warning('Wating', 'Because of reason network connection, wait a minutes for disconnecting', {
+                position: 'mr',
+                animate: 'slide',
+                duration: 3000
+            })
             var id = $(this).attr('name');
             socket.emit('reject', id);
         });
@@ -444,24 +449,26 @@
             })
         });
         socket.on('activeStat', function (stt) {
-            if (stt == 1) {
+            if (stt[0] == 1) {
                 $("#acStt").text('Actived');
                 setTimeout(function () {
                     tata.log('Actived', `Server is in actived status`, {
-                        position: 'tl',
+                        position: 'tr',
                         animate: 'slide',
                         duration: 3000
                     })
-                }, 3000);
+                }, stt[1]);
 
             }
             else {
                 $("#acStt").text('Deactived');
-                tata.info('Dectived', `Server is in deactived status`, {
-                    position: 'mt',
-                    animate: 'slide',
-                    duration: 2000
-                })
+                setTimeout(function () {
+                    tata.log('Deactived', 'Dectived', `Server is in deactived status`, {
+                        position: 'tr',
+                        animate: 'slide',
+                        duration: 3000
+                    })
+                }, stt[1]);
             }
         });
         socket.on('oneLeft', function (id) {
