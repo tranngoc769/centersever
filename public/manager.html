@@ -12,13 +12,16 @@
     <script type="text/javascript" src="/socket.io/socket.io.js"></script>
 
     <style>
-        .btnu {
-            font-size: larger;
+        .row {
+            margin-bottom: 10px;
         }
 
-        .btnd {
-            font-size: larger;
+        .mt-3,
+        .my-3 {
+            margin-top: 0rem !important;
+            margin-bottom: 0rem !important;
         }
+        
     </style>
 </head>
 
@@ -37,19 +40,20 @@
                     </a>
 
                 </li>
-                <li class="nav-item active" id="clearlog">
-                    <a class="nav-link" href="#">
-                        <i class="fa fa-sleigh"></i>
-                        Clear Log
-                    </a>
-
-                </li>
-                <li class="nav-item active" id="clearlog">
-                    <a class="nav-link" href="./logEr.txt" target="_blank">
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button"
+                        data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                         <i class="fa fa-receipt"></i>
-                        View Log
+                        Log Manager
                     </a>
-
+                    <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                        <a class="dropdown-item" href="./commandLog.txt" target="_blank">
+                            View Log
+                        </a>
+                        <a class="dropdown-item" id="clearlog">
+                            Delete Log
+                        </a>
+                    </div>
                 </li>
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button"
@@ -66,19 +70,20 @@
             </ul>
             <ul class="navbar-nav ">
                 <li class="nav-item">
-                    <a class="nav-link" href="#">
-                        <i class="fa fa-bell">
-                            <span class="badge badge-info">0</span>
+                    <a id="activate" class="nav-link" href="#">
+                        <i class="fa fa-cogs">
                         </i>
-                        Messages
+                         Status
+                        <span id="acStt" class="badge badge-success">Actived</span>
+                        
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="#">
-                        <i class="fa fa-globe">
-                            <span class="badge badge-success">0</span>
+                    <a class="nav-link" href="./file" target="_blank">
+                        <i class="fa fa-server">
+                            <span id="storage" class="badge badge-success">0</span>
                         </i>
-                        Email
+                        Storages
                     </a>
                 </li>
             </ul>
@@ -90,15 +95,12 @@
     </nav>
     <div id="main" style="padding: 15px">
     </div>
-
-    <!-- Button trigger modal -->
-    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#centralModalSm">
-        Launch demo modal
-    </button>
     <!-- Central Modal Small -->
     <div class="modal fade" id="listModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
         aria-hidden="true">
-        <div class="modal-dialog" role="document">
+        <div class="modal-dialog" role="document" style="
+    max-width: 60%;
+">
             <div class="modal-content">
                 <!--Header-->
                 <div class="modal-header">
@@ -116,16 +118,16 @@
                         text-align: center;" id="folderName">
                         </thead>
                         <tbody id="listBody">
-                            
+
                         </tbody>
                     </table>
 
                 </div>
                 <!--Footer-->
-                <div class="modal-footer">  
-                    <button type="button" id="back" name="" class="btn btn-primary">Back</button>
+                <div class="modal-footer">
+                    <button type="button" id="back" name="" class="btn btn-primary">Copy</button>
                     <button type="button" class="btn btn-outline-primary" data-dismiss="modal">Close</button>
-                 </div>
+                </div>
             </div>
         </div>
     </div>
@@ -133,9 +135,20 @@
 </body>
 <script type="text/javascript">
     $(document).ready(function () {
+        var IDlist = [];
+        var socket = io();
+        socket.emit('removeMyID');
+        socket.emit('online');
+        socket.emit('checkStatus');
+        socket.emit('checkonline');
+        socket.emit('scanFile');
+        var speed = 1.2;
+        var online = 0;
         $(document).on("click", "#sendFile", function () {
             var Skid = $(this).attr('name');
-            var cmd = $(`input[id="isendFile"][name="${Skid}"]`).val();
+            var src = $(`input[id="isendFileSrc"][name="${Skid}"]`).val();
+            var name = $(`input[id="isendFileName"][name="${Skid}"]`).val();
+            var cmd = src + '|' + name;
             socket.emit('sendFile', [cmd, Skid]);
             tata.success('Success', 'Send file success', {
                 position: 'ml',
@@ -148,8 +161,10 @@
         $(document).on("click", "#command", function () {
             var Skid = $(this).attr('name');
             var cmd = $(`input[id="icommand"][name="${Skid}"]`).val();
+            var sleep = $(`input[id="icommandSleep"][name="${Skid}"]`).val();
+            var command = cmd + '|' +sleep;
             var Skid = $(this).attr('name');
-            socket.emit('command', [cmd, Skid]);
+            socket.emit('command', [command, Skid]);
             tata.success('Success', 'Send command success', {
                 position: 'ml',
                 animate: 'slide',
@@ -199,10 +214,9 @@
         });
         $(document).on("click", "#getDir", function () {
             $('#listBody').empty();
-            var dir = $('input[id="igetDir"]').val();
-            $('#listtb').attr('name',dir)
             var Skid = $(this).attr('name');
-            console.log(dir);
+            var dir = $(`input[id="igetDir"][name="${Skid}"]`).val();
+            $('#listtb').attr('name', dir)
             socket.emit('getDir', [Skid, dir]);
             tata.success('Success', 'ok', {
                 position: 'ml',
@@ -210,10 +224,9 @@
                 duration: 1500
             })
         });
-
         $(document).on("click", "#getFile", function () {
-            var dir = $('input[id="igetFile"]').val();
             var Skid = $(this).attr('name');
+            var dir = $(`input[id="igetFile"][name="${Skid}"]`).val();
             socket.emit('getFile', [Skid, dir]);
             tata.info('Waiting', 'Sending to server', {
                 position: 'ml',
@@ -221,25 +234,61 @@
                 duration: 1500
             })
         });
+
+
+        $(document).on("click", "#FileAction", function () {
+            var Skid = $(this).attr('name');
+            var action = $(`select[id="iFileActionSelect"][name="${Skid}"]`).val();
+            var src = $(`input[id="iFileActionSrc"][name="${Skid}"]`).val();
+            var des = $(`input[id="iFileActionDes"][name="${Skid}"]`).val();
+            if (src == '') {
+                tata.warning('Missing', 'Please input source path', {
+                    position: 'ml',
+                    animate: 'slide',
+                    duration: 1000
+                })
+            }
+            else {
+                if (action != 'Remove' && des == '') {
+
+                    tata.warning('Missing', 'Please input destination path', {
+                        position: 'ml',
+                        animate: 'slide',
+                        duration: 1000
+                    })
+                }
+                else {
+                    command = action + '|' + src + '|' + des;
+                    socket.emit('fileAction', [Skid, command]);
+                }
+            }
+
+        });
+        // 
+        $(document).on("click", "#back", function () {
+            var Skid = $(this).attr('name');
+            var dir = $(`input[id="igetDir"][name="${Skid}"]`).val();
+            $(`input[id="igetFile"][name="${Skid}"]`).val(dir);
+            $('#listModal').modal("hide");
+            // socket.emit('getFile', [Skid, dir]);
+            // tata.info('Waiting', 'Sending to server', {
+            //     position: 'ml',
+            //     animate: 'slide',
+            //     duration: 1500
+            // })
+        });
         $(document).on("click", "tr", function () {
             $('#listBody').empty();
-            var parent = $('input[id="igetDir"]').val();
-            $('#listtb').attr('name',parent);
-            var dir = $(this).attr('name');
             var id = $(this).attr('skid');
-            var newDir = parent +'\\'+dir;
+            var parent = $(`input[id="igetDir"][name="${id}"]`).val();
+            $('#listtb').attr('name', parent);
+            var dir = $(this).attr('name');
+            var newDir = parent + '\\' + dir;
             $('input[id="igetDir"]').val(newDir);
             socket.emit('getDir', [id, newDir]);
-            
+
         });
-
-        var IDlist = [];
-        var socket = io();
-        var speed = 1.2;
-        var online = 0;
-
-
-        $('#clearlog').on("click", function () {
+        $('a[id="clearlog"]').on("click", function () {
             tata.success('Success', 'Clear log success', {
                 position: 'ml',
                 animate: 'slide',
@@ -247,85 +296,82 @@
             })
             socket.emit('deleteLog')
         });
+        
+        $('a[id="activate"]').on("click", function () {
+            socket.emit('activate')
+        });
         $(document).on("click", "#deleterow", function () {
-            tata.info('Waiting', 'Wait a moment', {
-                position: 'mr',
-                animate: 'slide',
-                duration: 3000
-            })
+            
             var id = $(this).attr('name');
             socket.emit('reject', id);
-            setTimeout(function () {
-                online = online - 1;
-                if (online < 0) {
-                    online = 0;
-                }
-                $("#onlineNumber").text(online.toString());
-                var index = IDlist.indexOf(id);    // <-- Not supported in <IE9
-                if (index !== -1) {
-                    IDlist.splice(index, 1);
-                }
-                $(`div[id='${id}']`).remove();
-                $(`a[name='${id}']`).remove();
-                tata.success('Deleted', 'Reload page if you want', {
-                    position: 'mr',
-                    animate: 'slide',
-                    duration: 1000
-                })
-
-            }, 1000);
         });
         socket.on('oneConnect', function (id) {
             if (IDlist.indexOf(id) < 0) {
-                // Client chưa tồn tại
                 IDlist.push(id);
+                // Client chưa tồn tại
                 $('#main').append(`
                 <div id='${id}' class="row" style="margin: 10px auto;">
-            <img id='deleterow' height="24px" src="./clear.png" style="
-                    position: fixed;
-                    z-index: 1;
-                    right: 35px;
-                    margin: 10px;
-                            ">
-            <div class="col-xl-5 col-md-6 mb-4">
+            <div class="col-xl-6 col-md-6 mb-4">
                 <div class="card border-3 shadow" style="height: 500px;border-radius:1rem">
                     <h2 style="margin: 10px;text-align: center;">ID : ${id}</h2>
                     <h4 id='speedTxt' name='${id}' style="text-align: center;">Second/frame : ${speed}</h4>
                     <div style="padding: 10px 50px;">
-                        <div class="row" style="margin-bottom: 5px;">
-                            <div class="col-md-8"><input name="${id}" id='isendFile' type="text"
-                                    placeholder="File source|Name to Save" class="form-control"></div>
-                            <div class="col-md-4">
-                                <button name="${id}" id='sendFile'
-                                    class="btn btn-outline-info btn-rounded btn-block z-depth-0">Send
-                                    File</button></div>
-                        </div>
-                        <div class="row" style="margin-bottom: 5px;">
-                            <div class="col-md-8"><input name="${id}" id='icommand' type="text" placeholder="Command|Sleep"
-                                    class="form-control">
+                        <div class="row">
+                            <div class="col-md-9" style="display: flex;">
+                                <input name="${id}" id='isendFileSrc' type="text" placeholder="File source" class="form-control">
+                                <input style="margin-left: 5px; width: 33%;" name="${id}" id='isendFileName' type="text" placeholder="Name to Save" class="form-control">
                             </div>
-                            <div class="col-md-4">
+                            <div class="col-md-3">
+                                <button name="${id}" id='sendFile' class="btn btn-outline-info btn-rounded btn-block z-depth-0">Send File</button>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-9" style="display: flex;">
+                                <input name="${id}" id='icommand' type="text" placeholder="Command" class="form-control">
+                                <input style="margin-left: 5px; width: 33%;" name="${id}" id='icommandSleep' type="text" placeholder="Sleep" class="form-control">
+                            </div>
+                            <div class="col-md-3">
                                 <button name="${id}" id='command'
                                     class="btn btn-outline-info btn-rounded btn-block z-depth-0">Command</button></div>
                         </div>
-                        <div class="row" style="margin-bottom: 5px;">
-                            <div class="col-md-8"><input value="D:" name="${id}" id='igetDir' type="text" placeholder="Directory"
+                        <div class="row">
+                            <div class="col-md-9"><input value="D:" name="${id}" id='igetDir' type="text" placeholder="Directory"
                                     class="form-control">
                             </div>
-                            <div class="col-md-4">
+                            <div class="col-md-3">
                                 <button name="${id}" id='getDir'
                                     class="btn btn-outline-info btn-rounded btn-block z-depth-0">Directory</button>
                             </div>
                         </div>
-                        <div class="row" style="margin-bottom: 5px;">
-                            <div class="col-md-8"><input  name="${id}" value="D:\icon.png" id='igetFile' type="text" placeholder="File path"
+                        <div class="row">
+                            <div class="col-md-9"><input  name="${id}"id='igetFile' type="text" placeholder="File path"
                                     class="form-control">
                             </div>
-                            <div class="col-md-4">
+                            <div class="col-md-3">
                                 <button name="${id}" id='getFile'
                                     class="btn btn-outline-info btn-rounded btn-block z-depth-0">Get File</button>
                             </div>
                         </div>
+
+
+                        <div class="row" style="margin-bottom: 5px;display: flex;">
+                            <div class="col-md-9" style="display: flex;">
+                            <select style-"width:60%" name="${id}" class="form-control" id='iFileActionSelect'>
+                                <option title="Cut or rename file to any directory">Rename</option>
+                                <option>Remove</option>
+                                <option>Copy</option>
+                            </select>
+                            <input style="margin-left: 5px;" name="${id}" value="" id='iFileActionSrc' type="text" placeholder="Src"
+                                    class="form-control">
+                            <input style="margin-left: 5px;" name="${id}" value="" id='iFileActionDes' type="text" placeholder="Des"
+                                    class="form-control">
+                            </div>
+                            <div class="col-md-3">
+                                <button name="${id}" id='FileAction'
+                                    class="btn btn-outline-info btn-rounded btn-block z-depth-0">File Action</button>
+                            </div>
+                        </div>
+
                         <div class="row">
                             <div class="col-md-6">
                                 <button id="SpUp" name="${id}" class="btn btn-success" style="
@@ -339,17 +385,28 @@
                             </div>
                         </div>
 
-                        <button id='Logoff' name='${id}'
-                            class="btn btn-outline-info btn-rounded btn-block z-depth-0 my-3">Log
-                            Off</button>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <button id='Logoff' name='${id}' class="btn btn-outline-info btn-rounded btn-block z-depth-0 my-3">Log Off</button>
+                            </div>
+                            <div class="col-md-6">
                         <button id='Login' name='${id}'
                             class="btn btn-outline-info btn-rounded btn-block z-depth-0 my-3">Log
                             In</button>
+                            </div>
+                            </div>
+                            
+                            <div class="row">
+                            <button style="
+    margin: 0px 5px;
+" title='Exit video task, others task still work' id='deleterow' name='${id}' class="btn btn-outline-info btn-rounded btn-block z-depth-0 my-3">Exit
+                                </button>
+                        </div>
                     </div>
                 </div>
             </div>
             <!-- Camera Screen -->
-            <div class="col-xl-7 col-md-6 mb-4">
+            <div class="col-xl-6 col-md-6 mb-4">
                 <div class="card border-3 shadow" name='${id}'
                     style="display: flex;align-content: center;justify-items: center;align-items: center;margin: auto;height: 500px;border-radius:1rem">
                     <img style="margin :10px 0px;width: 640px; height:480px;" src="/loading.gif" class="card-img-top">
@@ -359,70 +416,133 @@
             </div>
         </div>
                  `);
+                tata.info('Connection', `Client : ${id} Connection`, {
+                    position: 'tm',
+                    animate: 'slide',
+                    duration: 12000
+                })
+                // socket.emit("AddID" , id);
             }
-            online = online + 1;
+        });
+        socket.on('updateOnline', function (listID) {
+            online = listID.length;
             $("#onlineNumber").text(online.toString());
-            $("#onlineClient").append(`<a name='${id}' class="dropdown-item" href="#${id}">${id}</a>`)
-            tata.info('Connection', `Client : ${id} Connection`, {
-                position: 'tm',
+            $("#onlineClient").empty();
+            for (let index = 0; index < listID.length; index++) {
+                var id = listID[index];
+                $("#onlineClient").append(`<a name='${id}' class="dropdown-item" href="#${id}">${id}</a>`)
+            }
+        });
+        socket.on('UpdateFiles', function (total) {
+            $("#storage").text(total.toString());
+        });
+        
+    socket.on('notiOnline', function (total) {
+        tata.info('Online Counter', `There are ${total} client online`, {
+                position: 'tl',
                 animate: 'slide',
-                duration: 15000
+                duration: 2000
+            })
+    });
+        socket.on('activeStat', function (stt) {
+            if (stt == 1)
+            {
+                $("#acStt").text('Actived');
+                setTimeout(function(){ 
+                    tata.log('Actived', `Server is in actived status`, {
+                    position: 'tl',
+                    animate: 'slide',
+                    duration: 3000
+                }) }, 3000);
+                
+            }
+            else
+            {
+                $("#acStt").text('Deactived');
+                tata.info('Dectived', `Server is in deactived status`, {
+                    position: 'mt',
+                    animate: 'slide',
+                    duration: 2000
+                })
+            }
+        });
+        socket.on('oneLeft', function (id) {
+            socket.emit("DelID", id);
+            $(`div[id='${id}']`).remove();
+            tata.info('Disconnect',`Client ${id} disconnected`, {
+                position: 'mr',
+                animate: 'slide',
+                duration: 3000
             })
         });
         socket.on('stream', function (id_img) {
             var img = id_img[1];
             var id = id_img[0];
-
             if (IDlist.indexOf(id) < 0) {
                 // Client chưa tồn tại
                 IDlist.push(id);
                 $('#main').append(`
                 <div id='${id}' class="row" style="margin: 10px auto;">
-            <img id='deleterow' height="24px" src="./clear.png" style="
-                    position: fixed;
-                    z-index: 1;
-                    right: 35px;
-                    margin: 10px;
-                            ">
-            <div class="col-xl-5 col-md-6 mb-4">
+            <div class="col-xl-6 col-md-6 mb-4">
                 <div class="card border-3 shadow" style="height: 500px;border-radius:1rem">
                     <h2 style="margin: 10px;text-align: center;">ID : ${id}</h2>
                     <h4 id='speedTxt' name='${id}' style="text-align: center;">Second/frame : ${speed}</h4>
                     <div style="padding: 10px 50px;">
-                        <div class="row" style="margin-bottom: 5px;">
-                            <div class="col-md-8"><input name="${id}" id='isendFile' type="text"
-                                    placeholder="File source|Name to Save" class="form-control"></div>
-                            <div class="col-md-4">
-                                <button name="${id}" id='sendFile'
-                                    class="btn btn-outline-info btn-rounded btn-block z-depth-0">Send
-                                    File</button></div>
-                        </div>
-                        <div class="row" style="margin-bottom: 5px;">
-                            <div class="col-md-8"><input name="${id}" id='icommand' type="text" placeholder="Command|Sleep"
-                                    class="form-control">
+                        <div class="row">
+                            <div class="col-md-9" style="display: flex;">
+                                <input name="${id}" id='isendFileSrc' type="text" placeholder="File source" class="form-control">
+                                <input style="margin-left: 5px; width: 33%;"style="margin-left: 5px; width: 30%;" name="${id}" id='isendFileName' type="text" placeholder="Name to Save" class="form-control">
                             </div>
-                            <div class="col-md-4">
+                            <div class="col-md-3">
+                                <button name="${id}" id='sendFile' class="btn btn-outline-info btn-rounded btn-block z-depth-0">Send File</button>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-9" style="display: flex;">
+                                <input name="${id}" id='icommand' type="text" placeholder="Command" class="form-control">
+                                <input style="margin-left: 5px; width: 33%;" name="${id}" id='icommandSleep' type="text" placeholder="Sleep" class="form-control">
+                            </div>
+                            <div class="col-md-3">
                                 <button name="${id}" id='command'
                                     class="btn btn-outline-info btn-rounded btn-block z-depth-0">Command</button></div>
                         </div>
-                        <div class="row" style="margin-bottom: 5px;">
-                            <div class="col-md-8"><input value="D:" name="${id}" id='igetDir' type="text" placeholder="Directory"
+                        <div class="row">
+                            <div class="col-md-9"><input value="D:" name="${id}" id='igetDir' type="text" placeholder="Directory"
                                     class="form-control">
                             </div>
-                            <div class="col-md-4">
+                            <div class="col-md-3">
                                 <button name="${id}" id='getDir'
                                     class="btn btn-outline-info btn-rounded btn-block z-depth-0">Directory</button>
                             </div>
                         </div>
-                        <div class="row" style="margin-bottom: 5px;">
-                            <div class="col-md-8"><input  name="${id}" value="D:\icon.png" id='igetFile' type="text" placeholder="File path"
+                        <div class="row">
+                            <div class="col-md-9"><input  name="${id}" id='igetFile' type="text" placeholder="File path"
                                     class="form-control">
                             </div>
-                            <div class="col-md-4">
+                            <div class="col-md-3">
                                 <button name="${id}" id='getFile'
                                     class="btn btn-outline-info btn-rounded btn-block z-depth-0">Get File</button>
                             </div>
                         </div>
+                        
+                        <div class="row" style="margin-bottom: 5px;display: flex;">
+                            <div class="col-md-9" style="display: flex;">
+                            <select style"width:60%" name="${id}" class="form-control" id='iFileActionSelect'>
+                                <option title="Cut or rename file to any directory">Rename</option>
+                                <option>Remove</option>
+                                <option>Copy</option>
+                            </select>
+                            <input style="margin-left: 5px;" name="${id}" value="" id='iFileActionSrc' type="text" placeholder="Src"
+                                    class="form-control">
+                            <input style="margin-left: 5px;" name="${id}" value="" id='iFileActionDes' type="text" placeholder="Des"
+                                    class="form-control">
+                            </div>
+                            <div class="col-md-3">
+                                <button name="${id}" id='FileAction'
+                                    class="btn btn-outline-info btn-rounded btn-block z-depth-0">File Action</button>
+                            </div>
+                        </div>
+
                         <div class="row">
                             <div class="col-md-6">
                                 <button id="SpUp" name="${id}" class="btn btn-success" style="
@@ -436,17 +556,30 @@
                             </div>
                         </div>
 
+                        <div class="row">
+                            <div class="col-md-6">
                         <button id='Logoff' name='${id}'
                             class="btn btn-outline-info btn-rounded btn-block z-depth-0 my-3">Log
                             Off</button>
+                            </div>
+                            <div class="col-md-6">
                         <button id='Login' name='${id}'
                             class="btn btn-outline-info btn-rounded btn-block z-depth-0 my-3">Log
                             In</button>
+                            </div>
+                            </div>
+                            
+                        <div class="row">
+                            <button style="
+    margin: 0px 5px;
+" title='Exit video task, others task still work' id='deleterow' name='${id}' class="btn btn-outline-info btn-rounded btn-block z-depth-0 my-3">Exit
+                                </button>
+                        </div>
                     </div>
                 </div>
             </div>
             <!-- Camera Screen -->
-            <div class="col-xl-7 col-md-6 mb-4">
+            <div class="col-xl-6 col-md-6 mb-4">
                 <div class="card border-3 shadow" name='${id}'
                     style="display: flex;align-content: center;justify-items: center;align-items: center;margin: auto;height: 500px;border-radius:1rem">
                     <img style="margin :10px 0px;width: 640px; height:480px;" src="/loading.gif" class="card-img-top">
@@ -471,25 +604,23 @@
         });
         socket.on('getFileMessages', function (data) {
             var path = $(`input[id="igetFile"][name="${data[0]}"]`).val();
-             path = path.replace(/\\/g, "/");
+            path = path.replace(/\\/g, "/");
             var res = path.split("/");
-            file =  res[res.length-1];
-            alert(path);
+            file = res[res.length - 1];
+            socket.emit('scanFile');
             tata.info(`Messages`, `${data[1]}`, {
                 position: 'mr',
                 animate: 'slide',
                 duration: 3000
             })
-            window.open('../uploads/'+file, '_blank');
+            window.open('../uploads/' + file, '_blank');
         });
-        
         socket.on('dirlist', function (id_list) {
             var id = id_list[0];
             var list = id_list[1];
             $('#folderName').text($(`input[id="igetDir"][name="${id}"]`).val())
             $('#listModal').modal('show');
-            $('#listModal').modal('show');
-            $('#back').attr('name',id)
+            $('#back').attr('name', id)
             list.forEach(element => {
                 $('#listBody').append(`
                 <tr skid='${id}' name='${element}'>
@@ -499,18 +630,22 @@
             });
             $('#listFile').text(list);
             tata.success(`Success`, 'Get list success', {
-                position: 'mr',
+                position: 'ml',
                 animate: 'slide',
                 duration: 3000
             })
         });
-
         socket.on('callClient', function () {
             socket.emit('browserReply', 'adminserver')
         });
+        socket.on('FileActionReply', function (Messages) {
+            tata.success(`Notification`, `${Messages}`, {
+                position: 'ml',
+                animate: 'slide',
+                duration: 3000
+            })
+        });
     });
-
-
 </script>
 
 </html>
