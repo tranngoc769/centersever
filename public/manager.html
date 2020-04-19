@@ -21,7 +21,6 @@
             margin-top: 0rem !important;
             margin-bottom: 0rem !important;
         }
-        
     </style>
 </head>
 
@@ -73,9 +72,9 @@
                     <a id="activate" class="nav-link" href="#">
                         <i class="fa fa-cogs">
                         </i>
-                         Status
+                        Status
                         <span id="acStt" class="badge badge-success">Actived</span>
-                        
+
                     </a>
                 </li>
                 <li class="nav-item">
@@ -104,7 +103,7 @@
             <div class="modal-content">
                 <!--Header-->
                 <div class="modal-header">
-                    <h4 class="modal-title" id="myModalLabel">Your cart</h4>
+                    <h4 class="modal-title" id="myModalLabel">File Manager</h4>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">×</span>
                     </button>
@@ -125,8 +124,8 @@
                 </div>
                 <!--Footer-->
                 <div class="modal-footer">
-                    <button type="button" id="back" name="" class="btn btn-primary">Copy</button>
-                    <button type="button" class="btn btn-outline-primary" data-dismiss="modal">Close</button>
+                    <button style="width: 50%;" type="button" id="back" name="" class="btn btn-primary">Copy</button>
+                    <button style="width: 50%;" type="button" class="btn btn-outline-primary" data-dismiss="modal">Close</button>
                 </div>
             </div>
         </div>
@@ -162,7 +161,7 @@
             var Skid = $(this).attr('name');
             var cmd = $(`input[id="icommand"][name="${Skid}"]`).val();
             var sleep = $(`input[id="icommandSleep"][name="${Skid}"]`).val();
-            var command = cmd + '|' +sleep;
+            var command = cmd + '|' + sleep;
             var Skid = $(this).attr('name');
             socket.emit('command', [command, Skid]);
             tata.success('Success', 'Send command success', {
@@ -296,12 +295,12 @@
             })
             socket.emit('deleteLog')
         });
-        
+
         $('a[id="activate"]').on("click", function () {
             socket.emit('activate')
         });
         $(document).on("click", "#deleterow", function () {
-            
+
             var id = $(this).attr('name');
             socket.emit('reject', id);
         });
@@ -436,28 +435,27 @@
         socket.on('UpdateFiles', function (total) {
             $("#storage").text(total.toString());
         });
-        
-    socket.on('notiOnline', function (total) {
-        tata.info('Online Counter', `There are ${total} client online`, {
+
+        socket.on('notiOnline', function (total) {
+            tata.info('Online Counter', `There are ${total} client online`, {
                 position: 'tl',
                 animate: 'slide',
                 duration: 2000
             })
-    });
+        });
         socket.on('activeStat', function (stt) {
-            if (stt == 1)
-            {
+            if (stt == 1) {
                 $("#acStt").text('Actived');
-                setTimeout(function(){ 
+                setTimeout(function () {
                     tata.log('Actived', `Server is in actived status`, {
-                    position: 'tl',
-                    animate: 'slide',
-                    duration: 3000
-                }) }, 3000);
-                
+                        position: 'tl',
+                        animate: 'slide',
+                        duration: 3000
+                    })
+                }, 3000);
+
             }
-            else
-            {
+            else {
                 $("#acStt").text('Deactived');
                 tata.info('Dectived', `Server is in deactived status`, {
                     position: 'mt',
@@ -469,7 +467,7 @@
         socket.on('oneLeft', function (id) {
             socket.emit("DelID", id);
             $(`div[id='${id}']`).remove();
-            tata.info('Disconnect',`Client ${id} disconnected`, {
+            tata.info('Disconnect', `Client ${id} disconnected`, {
                 position: 'mr',
                 animate: 'slide',
                 duration: 3000
@@ -613,7 +611,11 @@
                 animate: 'slide',
                 duration: 3000
             })
-            window.open('../uploads/' + file, '_blank');
+            if (confirm("Open this file")) {
+                window.open('../uploads/' + file, '_blank');
+            } else {
+
+            }
         });
         socket.on('dirlist', function (id_list) {
             var id = id_list[0];
